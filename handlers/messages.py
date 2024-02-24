@@ -95,21 +95,23 @@ async def choose_address(message: Message, state: FSMContext, bot: Bot):
             key = i['key']
             email = i['email']
 
-            cursor.execute(f"SELECT address FROM hosts WHERE user_telegram_id = '{message.from_user.id}'")
-            isAlreadyHave_list = cursor.fetchone()
-
-            if isAlreadyHave_list != None and address in isAlreadyHave_list:
-                await message.answer("Sorry, but you can\'t add this address as you\'ve already added it.")
-
-                break
-
+            cursor.execute(f"SELECT address FROM hosts WHERE user_telegram_id = {message.from_user.id}")
+            isAlreadyHave_list = cursor.fetchall()
+            g = False
+            if isAlreadyHave_list != None :
+                for b in isAlreadyHave_list:
+                    if b[0] == address:
+                        await message.answer("Sorry, but you can\'t add this address as you\'ve already added it.")
+                        g = True
+                        break
+            if g: break
             cursor.execute(f"SELECT id FROM users WHERE user_telegram_id = '{message.from_user.id}'")
             id = cursor.fetchone()[0]
 
             cursor.execute(f"INSERT INTO hosts (id, user_telegram_id, address, key, domain_tld, country_code, email) VALUES (?, ?, ?, ?, ?, ?, ?)", (id, message.from_user.id, address, key, domain, country_code, email))
             db.commit()
 
-            cursor.execute(f"SELECT count_hosts FROM users WHERE user_telegram_id = '{message.from_user.id}'")
+            cursor.execute(f"SELECT count_hosts FROM users WHERE user_telegram_id = {message.from_user.id}")
             count_host = cursor.fetchone()[0]
             cursor.execute(f"UPDATE users SET count_hosts = {1 + count_host} WHERE user_telegram_id = '{message.from_user.id}'")
             db.commit()
@@ -126,6 +128,8 @@ async def choose_address(message: Message, state: FSMContext, bot: Bot):
     if not address_existence:
         await message.answer("Sorry, but this address was not found, try again or press \'cancel\'")
     else:
+        my_hosts_kb, count_hosts = menus.my_hosts(message.from_user.id)
+        my_hosts_kb = my_hosts_kb.as_markup()
         await message.answer(text=f"Now you have <u><b>{count_hosts}</b></u> hosts in your list, but you can add more at any time.",
                                 parse_mode="HTML",
                                 reply_markup=my_hosts_kb

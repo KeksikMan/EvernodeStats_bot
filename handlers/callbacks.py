@@ -219,8 +219,9 @@ async def return_main_menu(query: CallbackQuery, callback_data: CallbackData, bo
 
           keyboard = inline.get_keyboard(
                "Confirm",
-               btns_callback=(MenuCallback(menu='delete', button=f'confirm.{address}')),
-               btns_url=None
+               "Cancel",
+               btns_callback=(MenuCallback(menu='delete', button=f'confirm.{address}'), MenuCallback(menu='delete', button='cancel')),
+               btns_url=(None, None)
           )
 
           await bot.send_message(chat_id, 
@@ -250,6 +251,16 @@ async def return_main_menu(query: CallbackQuery, callback_data: CallbackData, bo
                            parse_mode="HTML"
                            )
           
+          my_hosts_kb = my_hosts_kb.as_markup()
+
+          await bot.send_message(chat_id=query.message.chat.id, text=f"Now you have <u><b>{count_hosts}</b></u> hosts in your list, but you can add more at any time.",
+                              parse_mode="HTML", 
+                              reply_markup=my_hosts_kb
+                              )
+     elif callback_data.button == 'cancel':
+          await bot.delete_message(chat_id, query.message.message_id)
+
+          my_hosts_kb, count_hosts = menus.my_hosts(query.from_user.id)
           my_hosts_kb = my_hosts_kb.as_markup()
 
           await bot.send_message(chat_id=query.message.chat.id, text=f"Now you have <u><b>{count_hosts}</b></u> hosts in your list, but you can add more at any time.",

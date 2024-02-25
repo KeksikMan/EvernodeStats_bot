@@ -202,6 +202,9 @@ async def return_main_menu(query: CallbackQuery, callback_data: CallbackData, bo
                          btns_url=(None)
                     ).as_markup()
 
+                    if addressBalance is None: addressBalance = 0
+                    if accumulatedRewardAmount is None: accumulatedRewardAmount = 0
+
                     await bot.send_message(query.message.chat.id, 
                                            text=f'Here are statistics for this address:\nAddress - <b>{address}</b>\nDomain - {domain}\nEmail - {email}\nCountry code - {country_code}\nMax instances - <u><b>{maxInstances}</b></u> ⚪\nActive instances - <u><b>{activeInstances}</b></u> 🟢\nVersion - {version}\nCpu model name - {cpuModelName}\n- Machine\'s pecifications:\n    Ram - <u><b>{round(int(ramMb) / 1024, 1)}</b></u> (GB)\n    Disk - <u><b>{round(int(diskMb) / 1024, 1)}</b></u> (GB)\n    Cpu cores - <u><b>{cpuCount}</b></u>\nAccumulated reward amount - {round(float(accumulatedRewardAmount), 3)} EVR\nAddress balance - {round(float(addressBalance), 3)} EVR',
                                            parse_mode="HTML",
